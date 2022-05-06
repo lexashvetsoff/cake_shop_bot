@@ -118,8 +118,7 @@ async def specify_promocode(message: types.Message, state: FSMContext):
 
 
 # Выход из машины состояний
-# TODO разобраться почему не работает
-async def cancel_order(message: types.Message, state: FSMContext):
+async def cancel_handler(message: types.Message, state: FSMContext):
     current_state = await state.get_state()
     if current_state is None:
         return
@@ -130,6 +129,8 @@ async def cancel_order(message: types.Message, state: FSMContext):
 # регистрируем хендлеры
 def register_handlers_order(dispatcher: Dispatcher):
     dispatcher.register_message_handler(order_start, commands=['order'], state=None)
+    dispatcher.register_message_handler(cancel_handler, state="*", commands='отмена')
+    dispatcher.register_message_handler(cancel_handler, Text(equals='отмена', ignore_case=True), state="*")
     dispatcher.register_message_handler(choose_levels, state=FSMOrder.levels)
     dispatcher.register_message_handler(choose_form, state=FSMOrder.form)
     dispatcher.register_message_handler(choose_topping, state=FSMOrder.topping)
@@ -141,5 +142,3 @@ def register_handlers_order(dispatcher: Dispatcher):
     dispatcher.register_message_handler(choose_date, state=FSMOrder.delivery_date)
     dispatcher.register_message_handler(choose_time, state=FSMOrder.delivery_time)
     dispatcher.register_message_handler(specify_promocode, state=FSMOrder.promocode)
-    dispatcher.register_message_handler(cancel_order, state="*", commands='отмена')
-    dispatcher.register_message_handler(cancel_order, Text(equals='отмена', ignore_case=True), state="*")
