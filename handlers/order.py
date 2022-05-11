@@ -8,6 +8,7 @@ from aiogram_calendar import simple_cal_callback, SimpleCalendar
 # from create_bot import dispatcher
 
 order_cost = 0
+user_topping = []
 
 
 class FSMOrder(StatesGroup):
@@ -70,40 +71,56 @@ async def choose_form(callback: types.CallbackQuery, state: FSMContext):
 # третий ответ
 async def choose_topping(callback: types.CallbackQuery, state: FSMContext):
     global order_cost
+    global user_topping
     user_input = callback.data.split(':')
-    order_cost += int(user_input[1])
-    async with state.proxy() as cake:
-        cake['topping'] = user_input[0][3:]
-    await FSMOrder.next()
-    await callback.message.answer('Шаг 4')
-    await callback.message.reply('Выберите ягоды', reply_markup=berries_keyboard)
-    await callback.answer()
+    if user_input[0][3:] != 'Далее':
+        user_topping.append(user_input[0][3:])
+        order_cost += int(user_input[1])
+        await callback.message.reply('Выберите топпинг', reply_markup=topping_keyboard)
+    else:
+        # переход в следующее состояние
+        async with state.proxy() as cake:
+            cake['topping'] = user_topping
+        await FSMOrder.next()
+        await callback.message.answer('Шаг 4')
+        await callback.message.reply('Выберите ягоды', reply_markup=berries_keyboard)
+        await callback.answer()
 
 
 # четвертый ответ
 async def choose_berries(callback: types.CallbackQuery, state: FSMContext):
     global order_cost
+    global user_topping
     user_input = callback.data.split(':')
-    order_cost += int(user_input[1])
-    async with state.proxy() as cake:
-        cake['berries'] = user_input[0][3:]
-    await FSMOrder.next()
-    await callback.message.answer('Шаг 5')
-    await callback.message.reply('Выберите декор', reply_markup=decor_keyboard)
-    await callback.answer()
+    if user_input[0][3:] != 'Далее':
+        user_topping.append(user_input[0][3:])
+        order_cost += int(user_input[1])
+        await callback.message.reply('Выберите ягоды', reply_markup=berries_keyboard)
+    else:
+        async with state.proxy() as cake:
+            cake['berries'] = user_topping
+        await FSMOrder.next()
+        await callback.message.answer('Шаг 5')
+        await callback.message.reply('Выберите декор', reply_markup=decor_keyboard)
+        await callback.answer()
 
 
 # пятый ответ
 async def choose_decor(callback: types.CallbackQuery, state: FSMContext):
     global order_cost
+    global user_topping
     user_input = callback.data.split(':')
-    order_cost += int(user_input[1])
-    async with state.proxy() as cake:
-        cake['decor'] = user_input[0][3:]
-    await FSMOrder.next()
-    await callback.message.answer('Шаг 6')
-    await callback.message.reply('Надпись на торт', reply_markup=inscription_keyboard)
-    await callback.answer()
+    if user_input[0][3:] != 'Далее':
+        user_topping.append(user_input[0][3:])
+        order_cost += int(user_input[1])
+        await callback.message.reply('Выберите декор', reply_markup=decor_keyboard)
+    else:
+        async with state.proxy() as cake:
+            cake['decor'] = user_topping
+        await FSMOrder.next()
+        await callback.message.answer('Шаг 6')
+        await callback.message.reply('Надпись на торт', reply_markup=inscription_keyboard)
+        await callback.answer()
 
 
 # шестой ответ
